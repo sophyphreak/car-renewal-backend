@@ -1,10 +1,10 @@
-const express = require('express')
+import express from 'express'
 const router = express.Router()
-const scraper = require('../scraper')
+import getPlaces from '../prisma/getPlaces.js'
 
 router.get('/api/v1/renewal-locations', async (req, res, next) => {
-  const renewalLocations = await scraper()
-  res.send(renewalLocations)
+  const places = await getPlaces()
+  res.send(places)
 })
 
-module.exports = router
+export default router

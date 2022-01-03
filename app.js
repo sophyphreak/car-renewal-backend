@@ -1,23 +1,29 @@
-const createError = require('http-errors')
-const express = require('express')
-const path = require('path')
-const cookieParser = require('cookie-parser')
-const logger = require('morgan')
-const helmet = require('helmet')
+import createError from 'http-errors'
+import express from 'express'
+import path from 'path'
+import cookieParser from 'cookie-parser'
+import logger from 'morgan'
+import helmet from 'helmet'
+import cors from 'cors'
 
-require('./scraper') // activate scraper
+import indexRouter from './routes/index.js'
 
-const indexRouter = require('./routes/index')
+import startCron from './cron/index.js'
+startCron()
+
+import startup from './startup/index.js'
+startup()
 
 const app = express()
 
 app.use(helmet())
+app.use(cors())
 
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static('public'))
 
 app.use('/', indexRouter)
 
@@ -37,4 +43,8 @@ app.use(function (err, req, res, next) {
   res.send({ error: err.message })
 })
 
-module.exports = app
+const port = 3000
+
+app.listen(port, () => {
+  console.log(`App listening at http://localhost:${port}`)
+})
