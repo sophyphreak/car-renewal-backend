@@ -1,17 +1,46 @@
 import fetch from 'node-fetch'
 
 const getLatLong = async renewalLocations => {
-  renewalLocations = renewalLocations.slice(0, 1)
-  const locationsWithLatLong = renewalLocations.map(async location => {
-    const { address, city, zip } = location
-    const queryString = `${address}, ${city} ${zip}`
+  // renewalLocations = renewalLocations.slice(124, 126)
+  const locationsWithLatLong = renewalLocations.map(async (location, index) => {
+    const { store, address, city, zip } = location
+    const queryString = encodeURIComponent(`${address}, ${city} ${zip}`)
+    const uri = `https://maps.googleapis.com/maps/api/geocode/json?address=${queryString}&key=${process.env.GOOGLE_API_KEY}`
+    let latitude, longitude
     try {
-      const data = await fetch(
-        `http://api.positionstack.com/v1/forward?access_key=${process.env.POSITION_STACK_API_KEY}&query=${queryString}`
+      await timeout(100 * index)
+      while (
+        typeof latitude === 'undefined' ||
+        typeof longitude === 'undefined'
+      ) {
+        console.log(
+          `start fetch for index ${index}: ${store} ${address}, ${city} ${zip}`
+        )
+        const response = await fetch(uri)
+        const data = await response.json()
+        const { results } = data
+        if (results.length === 0) {
+          console.log(
+            `No lat long returned for index ${index}: ${store} ${address}, ${city} ${zip}`
+          )
+          console.log('data:', data)
+          console.log('retrying...')
+          await timeout(1000)
+          continue
+        }
+        const [
+          {
+            geometry: {
+              location: { lat, lng },
+            },
+          },
+        ] = results
+        latitude = lat
+        longitude = lng
+      }
+      console.log(
+        `coordinates found for index ${index}: ${store} ${address}, ${city} ${zip} lat: ${latitude} lng: ${longitude}`
       )
-      const {
-        data: [{ latitude, longitude }],
-      } = await data.json()
       location.latitude = latitude
       location.longitude = longitude
       return location
@@ -20,6 +49,10 @@ const getLatLong = async renewalLocations => {
     }
   })
   return Promise.all(locationsWithLatLong)
+}
+
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export default getLatLong
