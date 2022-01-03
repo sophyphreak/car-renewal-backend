@@ -5,7 +5,6 @@ const prisma = new PrismaClient()
 
 const checkIfPlacesExist = async () => {
   const placeCount = await prisma.place.count({})
-  console.log(placeCount)
   if (placeCount === 0) {
     return false
   }
