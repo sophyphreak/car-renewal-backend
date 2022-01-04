@@ -1,7 +1,6 @@
 import fetch from 'node-fetch'
 
 const getLatLong = async renewalLocations => {
-  // renewalLocations = renewalLocations.slice(124, 126)
   const locationsWithLatLong = renewalLocations.map(async (location, index) => {
     const { store, address, city, zip } = location
     const queryString = encodeURIComponent(`${address}, ${city} ${zip}`)
