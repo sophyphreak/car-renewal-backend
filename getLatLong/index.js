@@ -7,7 +7,7 @@ const getLatLong = async renewalLocations => {
     const uri = `https://maps.googleapis.com/maps/api/geocode/json?address=${queryString}&key=${process.env.GOOGLE_API_KEY}`
     let latitude, longitude
     try {
-      await timeout(100 * index)
+      await timeout(100 * index) // stagger the requests
       while (
         typeof latitude === 'undefined' ||
         typeof longitude === 'undefined'
