@@ -42,8 +42,8 @@ app.use(function (err, req, res, next) {
   res.send({ error: err.message })
 })
 
-const port = 3000
+const PORT = process.env.PORT || 3000
 
-app.listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`)
+app.listen(PORT, () => {
+  console.log(`App listening at http://localhost:${PORT}`)
 })
