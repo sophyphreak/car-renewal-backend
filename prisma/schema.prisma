@@ -10,7 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Place {
+model Location {
   id        Int     @id @default(autoincrement())
   store     String
   address   String
