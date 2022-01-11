@@ -11,12 +11,13 @@ datasource db {
 }
 
 model Place {
-  id        Int    @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   store     String
   address   String
   city      String
   zip       String
   telephone String
-  latitude  Float
-  longitude Float
+  latitude  Float?
+  longitude Float?
+  active    Boolean @default(true)
 }
