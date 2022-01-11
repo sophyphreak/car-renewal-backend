@@ -9,6 +9,9 @@ const retrieveLocations = async () => {
       active: true,
     },
   })
+  for (let location of locations) {
+    delete location.active
+  }
   return locations
 }
 
