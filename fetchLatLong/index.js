@@ -4,7 +4,7 @@ const fetchLatLong = async locations => {
   const locationsWithLatLong = locations.map(async (location, index) => {
     await staggerRequest(index)
     const uri = generateUri(location)
-    location = await fetchLoop({ location, index, uri })
+    location = await attemptFetchAndLoopIfFails({ location, index, uri })
     const { latitude, longitude } = location
     if (latitude != null && longitude != null) {
       printCoordinatesFoundMessage({ index, location })
@@ -36,8 +36,7 @@ const printCoordinatesFoundMessage = ({
 
 const MAX_RETRYS = 5
 
-// Loop repeats request if it fails, returns location with latitude and longitude
-const fetchLoop = async ({ location, index, uri }) => {
+const attemptFetchAndLoopIfFails = async ({ location, index, uri }) => {
   let data, ok, latitude, longitude
   try {
     for (let retryCount = 0; retryCount < MAX_RETRYS; retryCount++) {

@@ -5,18 +5,8 @@ const prisma = new PrismaClient()
 
 const updateLocationsWithLatLong = async locations => {
   for (let location of locations) {
-    const { store, address, city, zip, telephone, latitude, longitude } =
-      location
+    const { id, latitude, longitude } = location
     try {
-      const { id } = await prisma.location.findFirst({
-        where: {
-          store,
-          address,
-          city,
-          zip,
-          telephone,
-        },
-      })
       await prisma.location.update({
         where: { id },
         data: {
