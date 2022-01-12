@@ -2,74 +2,28 @@ import fetch from 'node-fetch'
 
 const fetchLatLong = async locations => {
   const locationsWithLatLong = locations.map(async (location, index) => {
-    await staggerRequests(index)
-    const { address, city, zip } = location
-    const queryString = encodeURIComponent(`${address}, ${city} ${zip}`)
-    const uri = `https://maps.googleapis.com/maps/api/geocode/json?address=${queryString}&key=${process.env.GOOGLE_API_KEY}`
-    let latitude, longitude
-    let retryRequestCount = 0
-    try {
-      while (
-        retryRequestCount < 5 &&
-        (typeof latitude === 'undefined' || typeof longitude === 'undefined')
-      ) {
-        ;({ latitude, longitude } = await attemptFetch({
-          uri,
-          location,
-          index,
-        }))
-        retryRequestCount++
-      }
-      location.latitude = latitude
-      location.longitude = longitude
-    } catch (error) {
-      console.error(error)
+    await staggerRequest(index)
+    const uri = generateUri(location)
+    location = await fetchLoop({ location, index, uri })
+    const { latitude, longitude } = location
+    if (latitude != null && longitude != null) {
+      printCoordinatesFoundMessage({ index, location })
     }
-    printCoordinatesFoundMessage({ index, location })
     return location
   })
   return Promise.all(locationsWithLatLong)
 }
 
 // Google allows max 50 requests per second
-const staggerRequests = async index => await timeout(100 * index)
+const staggerRequest = async index => await timeout(100 * index)
 
-const attemptFetch = async ({ uri, location, index }) => {
-  const response = await fetch(uri)
-  const data = await response.json()
-  const { results } = data
-  if (results.length === 0) {
-    await printRequestFailedMessages({ location, index, data })
-    return { undefined, undefined }
-  }
-  const { latitude, longitude } = await destructureLatLong(results)
-  return { latitude, longitude }
-}
+const timeout = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-const printRequestFailedMessages = async ({
-  location: { store, address, city, zip },
-  index,
-  data,
-}) => {
-  console.log(
-    `No lat long returned for index ${index}: ${store} ${address}, ${city} ${zip}`
-  )
-  console.log('data:', data)
-  console.log('retrying...')
-  await timeout(1000)
-}
-
-const destructureLatLong = async results => {
-  const [
-    {
-      geometry: {
-        location: { lat, lng },
-      },
-    },
-  ] = results
-  const latitude = lat
-  const longitude = lng
-  return { latitude, longitude }
+const generateUri = location => {
+  const { address, city, zip } = location
+  const queryString = encodeURIComponent(`${address}, ${city} ${zip}`)
+  const uri = `https://maps.googleapis.com/maps/api/geocode/json?address=${queryString}&key=${process.env.GOOGLE_API_KEY}`
+  return uri
 }
 
 const printCoordinatesFoundMessage = ({
@@ -80,8 +34,64 @@ const printCoordinatesFoundMessage = ({
     `coordinates found for index ${index}: ${store} ${address}, ${city} ${zip} lat: ${latitude} lng: ${longitude}`
   )
 
-function timeout(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+const MAX_RETRYS = 5
+
+// Loop repeats request if it fails, returns location with latitude and longitude
+const fetchLoop = async ({ location, index, uri }) => {
+  let data, ok, latitude, longitude
+  try {
+    for (let retryCount = 0; retryCount < MAX_RETRYS; retryCount++) {
+      ;({ data, ok } = await attemptFetch(uri))
+      if (ok) {
+        break
+      }
+      printRequestFailedMessages({ location, index, data })
+      await timeout(1000)
+    }
+    if (ok) {
+      ;({ latitude, longitude } = destructureLatLong(data))
+    }
+    location.latitude = latitude
+    location.longitude = longitude
+  } catch (error) {
+    console.error(error)
+  }
+  return location
+}
+
+const attemptFetch = async uri => {
+  const response = await fetch(uri)
+  const data = await response.json()
+  const { status } = data
+  if (status !== 'OK') {
+    return { ok: false, data }
+  }
+  return { data, ok: true }
+}
+
+const printRequestFailedMessages = ({
+  location: { store, address, city, zip },
+  index,
+  data,
+}) => {
+  console.log(
+    `No lat long returned for index ${index}: ${store} ${address}, ${city} ${zip}`
+  )
+  console.log('data:', data)
+  console.log('retrying...')
+}
+
+const destructureLatLong = data => {
+  const {
+    results: [
+      {
+        geometry: {
+          location: { lat: latitude, lng: longitude },
+        },
+      },
+    ],
+  } = data
+  return { latitude, longitude }
 }
 
 export default fetchLatLong
