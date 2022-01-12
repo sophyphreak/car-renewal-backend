@@ -3,7 +3,7 @@ const { PrismaClient } = pkg
 
 const prisma = new PrismaClient()
 
-const activateLocations = async renewalLocations => {
+const activateActiveLocations = async renewalLocations => {
   renewalLocations.forEach(async location => {
     const { store, address, city, zip, telephone } = location
     const locationRecord = await prisma.location.findFirst({
@@ -28,4 +28,4 @@ const activateLocations = async renewalLocations => {
   })
 }
 
-export default activateLocations
+export default activateActiveLocations
