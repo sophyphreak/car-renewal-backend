@@ -1,8 +1,5 @@
 import updateRenewalLocations from '../updateRenewalLocations/index.js'
 
-const startup = async () => {
-  updateRenewalLocations()
-  return
-}
+const startup = async () => await updateRenewalLocations()
 
 export default startup
