@@ -1,7 +1,11 @@
-import prisma from './client.js'
+import { Location } from '../types'
 
-const activateActiveLocations = async renewalLocations => {
-  renewalLocations.forEach(async location => {
+import prisma from './client'
+
+const activateActiveLocations = async (
+  renewalLocations: Location[]
+): Promise<void> => {
+  renewalLocations.forEach(async (location) => {
     const { store, address, city, zip, telephone } = location
     const locationRecord = await prisma.location.findFirst({
       where: {

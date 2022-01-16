@@ -1,7 +1,8 @@
-import prisma from './client.js'
+import prisma from './client'
+import { Location } from '../types/index'
 
 const retrieveLocations = async () => {
-  const locations = await prisma.location.findMany({
+  const locations: Location[] = await prisma.location.findMany({
     where: {
       active: true,
     },

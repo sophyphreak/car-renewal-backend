@@ -1,6 +1,8 @@
-import fetch from 'node-fetch'
+import { Location } from '../types'
 
-const fetchLatLong = async locations => {
+import fetch from './fetch'
+
+const fetchLatLong = async (locations: Location[]): Promise<Location[]> => {
   const locationsWithLatLong = locations.map(async (location, index) => {
     await staggerRequest(index)
     const uri = generateUri(location)
@@ -15,11 +17,14 @@ const fetchLatLong = async locations => {
 }
 
 // Google allows max 50 requests per second
-const staggerRequest = async index => await timeout(100 * index)
+const staggerRequest = async (index: number): Promise<void> => {
+  await timeout(100 * index)
+}
 
-const timeout = ms => new Promise(resolve => setTimeout(resolve, ms))
+const timeout = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms))
 
-const generateUri = location => {
+const generateUri = (location: Location): string => {
   const { address, city, zip } = location
   const queryString = encodeURIComponent(`${address}, ${city} ${zip}`)
   const uri = `https://maps.googleapis.com/maps/api/geocode/json?address=${queryString}&key=${process.env.GOOGLE_API_KEY}`
@@ -29,58 +34,85 @@ const generateUri = location => {
 const printCoordinatesFoundMessage = ({
   index,
   location: { store, address, city, zip, latitude, longitude },
-}) =>
+}: {
+  index: number
+  location: Location
+}): void =>
   console.log(
     `coordinates found for index ${index}: ${store} ${address}, ${city} ${zip} lat: ${latitude} lng: ${longitude}`
   )
 
-const MAX_RETRYS = 5
+const MAX_RETRYS: number = 5
 
-const attemptFetchAndLoopIfFails = async ({ location, index, uri }) => {
-  let data, ok, latitude, longitude
+const attemptFetchAndLoopIfFails = async ({
+  location,
+  index,
+  uri,
+}: {
+  location: Location
+  index: number
+  uri: string
+}): Promise<Location> => {
+  let geoCodeData, ok, latitude, longitude
   try {
     for (let retryCount = 0; retryCount < MAX_RETRYS; retryCount++) {
-      ;({ data, ok } = await attemptFetch(uri))
+      ;({ geoCodeData, ok } = await attemptFetch(uri))
       if (ok) {
         break
       }
-      printRequestFailedMessages({ location, index, data })
+      printRequestFailedMessages({ location, index, geoCodeData })
       await timeout(1000)
     }
-    if (ok) {
-      ;({ latitude, longitude } = destructureLatLong(data))
+    if (ok && geoCodeData) {
+      ;({ latitude, longitude } = destructureLatLong(geoCodeData))
     }
-    location.latitude = latitude
-    location.longitude = longitude
+    location.latitude = latitude ?? null
+    location.longitude = longitude ?? null
   } catch (error) {
     console.error(error)
   }
   return location
 }
 
-const attemptFetch = async uri => {
+interface GeoCodeData {
+  results: [{ geometry: { location: { lat: number; lng: number } } }]
+  status: string
+}
+
+const attemptFetch = async (
+  uri: string
+): Promise<{ geoCodeData: GeoCodeData; ok: boolean }> => {
   const response = await fetch(uri)
-  const data = await response.json()
-  const { status } = data
+  const geoCodeData = await response.json()
+  const { status } = geoCodeData
   if (status !== 'OK') {
-    return { ok: false, data }
+    return { ok: false, geoCodeData }
   }
-  return { data, ok: true }
+  return { geoCodeData, ok: true }
 }
 
 const printRequestFailedMessages = ({
   location: { store, address, city, zip },
   index,
-  data,
-}) => {
+  geoCodeData,
+}: {
+  location: Location
+  index: number
+  geoCodeData: GeoCodeData
+}): void => {
   console.log(
     `No lat long returned for index ${index}: ${store} ${address}, ${city} ${zip}`
   )
-  console.log('data:', data)
+  console.log('geoCodeData:', geoCodeData)
   console.log('retrying...')
 }
 
-const destructureLatLong = data => {
+interface Coordinates {
+  latitude: number
+  longitude: number
+}
+
+const destructureLatLong = (geoCodeData: GeoCodeData): Coordinates => {
   const {
     results: [
       {
@@ -89,7 +121,7 @@ const destructureLatLong = data => {
         },
       },
     ],
-  } = data
+  } = geoCodeData
   return { latitude, longitude }
 }
 

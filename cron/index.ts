@@ -1,10 +1,10 @@
 import { CronJob as CronJob } from 'cron'
-import updateRenewalLocations from '../updateRenewalLocations/index.js'
+import updateRenewalLocations from '../updateRenewalLocations'
 
-const startCron = () => {
+const startCron = (): void => {
   new CronJob(
     '00 00 00 * * *',
-    () => updateRenewalLocations(),
+    (): Promise<void> => updateRenewalLocations(),
     null,
     true,
     'America/Los_Angeles'

@@ -1,12 +1,14 @@
-import prisma from './client.js'
+import { Location } from '../types'
 
-const deactiveInactiveLocations = async renewalLocations => {
+import prisma from './client'
+
+const deactiveInactiveLocations = async (renewalLocations: Location[]) => {
   const activeLocationsInDatabase = await prisma.location.findMany({
     where: { active: true },
   })
   for (let databaseLocation of activeLocationsInDatabase) {
     const { id, store, address, city, zip, telephone } = databaseLocation
-    const isRenewalLocation = !!renewalLocations.find(location => {
+    const isRenewalLocation = !!renewalLocations.find((location) => {
       if (
         location.store === store &&
         location.address === address &&

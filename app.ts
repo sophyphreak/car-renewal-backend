@@ -1,19 +1,21 @@
 import createError from 'http-errors'
-import express from 'express'
+import express, { Request, Response, Application } from 'express'
 import cookieParser from 'cookie-parser'
 import logger from 'morgan'
 import helmet from 'helmet'
 import cors from 'cors'
 
-import indexRouter from './routes/index.js'
+import indexRouter from './routes/index'
 
-import startCron from './cron/index.js'
+// @ts-ignore
+import startCron from './cron/index'
 startCron()
 
-import startup from './startup/index.js'
+// @ts-ignore
+import startup from './startup/index'
 startup()
 
-const app = express()
+const app: Application = express()
 
 app.use(helmet())
 app.use(cors())
@@ -31,8 +33,13 @@ app.use(function (req, res, next) {
   next(createError(404))
 })
 
+interface Error {
+  message: string
+  status: number
+}
+
 // error handler
-app.use(function (err, req, res, next) {
+app.use(function (err: Error, req: Request, res: Response) {
   // set locals, only providing error in development
   res.locals.message = err.message
   res.locals.error = req.app.get('env') === 'development' ? err : {}

@@ -1,4 +1,4 @@
-import prisma from './client.js'
+import prisma from './client'
 
 const findLocationsWithoutLatLong = async () => {
   const locationsWithoutLatLong = await prisma.location.findMany({

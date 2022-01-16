@@ -1,4 +1,4 @@
-import updateRenewalLocations from '../updateRenewalLocations/index.js'
+import updateRenewalLocations from '../updateRenewalLocations'
 
 const startup = async () => await updateRenewalLocations()
 

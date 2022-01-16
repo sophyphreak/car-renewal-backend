@@ -1,6 +1,10 @@
-import prisma from './client.js'
+import { Location } from '../types'
 
-const updateLocationsWithLatLong = async locations => {
+import prisma from './client'
+
+const updateLocationsWithLatLong = async (
+  locations: Location[]
+): Promise<void> => {
   for (let location of locations) {
     const { id, latitude, longitude } = location
     try {
