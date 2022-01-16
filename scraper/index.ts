@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer'
+import _ from 'lodash'
 import { Location } from '../types'
 
 const scrapeRenewalLocations = async (): Promise<Location[]> => {
@@ -52,8 +53,9 @@ interface PartialLocation {
 
 const validateLocation = (partialLocation: PartialLocation): void => {
   let errorString = ''
-  for (let key of Object.keys(partialLocation)) {
-    if (partialLocation[key] === '') {
+  const keyValuePairs = _.toPairs(partialLocation)
+  for (const [key, value] of keyValuePairs) {
+    if (value === '') {
       errorString += `\`${key}\` `
     }
   }

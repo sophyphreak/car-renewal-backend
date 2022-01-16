@@ -5,7 +5,7 @@ import prisma from './client'
 const updateLocationsWithLatLong = async (
   locations: Location[]
 ): Promise<void> => {
-  for (let location of locations) {
+  for (const location of locations) {
     const { id, latitude, longitude } = location
     try {
       await prisma.location.update({

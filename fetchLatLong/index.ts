@@ -42,7 +42,7 @@ const printCoordinatesFoundMessage = ({
     `coordinates found for index ${index}: ${store} ${address}, ${city} ${zip} lat: ${latitude} lng: ${longitude}`
   )
 
-const MAX_RETRYS: number = 5
+const MAX_RETRYS = 5
 
 const attemptFetchAndLoopIfFails = async ({
   location,

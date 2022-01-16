@@ -1,10 +1,9 @@
 import express, { Request, Response } from 'express'
 import { Location } from '../types/index'
 const router = express.Router()
-// @ts-ignore
 import retrieveLocations from '../prisma/retrieveLocations'
 
-router.get('/api/v1/renewal-locations', async (req, res, next) => {
+router.get('/api/v1/renewal-locations', async (req, res) => {
   const locations: Location[] = await retrieveLocations()
   res.send(locations)
 })
@@ -19,14 +18,17 @@ router.get(
       return b.latitude - a.latitude
     })
     let hasDouble = false
-    for (let i = 0; i < locations.length - 1; i++) {
-      if (locations[i] === locations[i + 1]) {
+    locations.forEach((location, index) => {
+      if (index === locations.length - 1) {
+        return
+      }
+      if (location === locations[index + 1]) {
         hasDouble = true
         console.log('double found:')
-        console.log(locations[i])
-        console.log(locations[i + 1])
+        console.log(location)
+        console.log(locations[index + 1])
       }
-    }
+    })
     res.send(hasDouble ? 'Double found!' : 'No double found')
   }
 )

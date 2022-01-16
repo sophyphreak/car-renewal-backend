@@ -6,7 +6,7 @@ const deactiveInactiveLocations = async (renewalLocations: Location[]) => {
   const activeLocationsInDatabase = await prisma.location.findMany({
     where: { active: true },
   })
-  for (let databaseLocation of activeLocationsInDatabase) {
+  for (const databaseLocation of activeLocationsInDatabase) {
     const { id, store, address, city, zip, telephone } = databaseLocation
     const isRenewalLocation = !!renewalLocations.find((location) => {
       if (

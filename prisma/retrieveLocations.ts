@@ -7,7 +7,7 @@ const retrieveLocations = async () => {
       active: true,
     },
   })
-  for (let location of locations) {
+  for (const location of locations) {
     delete location.active
   }
   return locations

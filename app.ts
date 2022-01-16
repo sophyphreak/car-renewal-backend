@@ -7,11 +7,9 @@ import cors from 'cors'
 
 import indexRouter from './routes/index'
 
-// @ts-ignore
 import startCron from './cron/index'
 startCron()
 
-// @ts-ignore
 import startup from './startup/index'
 startup()
 
