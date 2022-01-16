@@ -1,7 +1,4 @@
-import pkg from '@prisma/client'
-const { PrismaClient } = pkg
-
-const prisma = new PrismaClient()
+import prisma from './client.js'
 
 const findLocationsWithoutLatLong = async () => {
   const locationsWithoutLatLong = await prisma.location.findMany({

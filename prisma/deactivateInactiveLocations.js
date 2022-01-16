@@ -1,7 +1,4 @@
-import pkg from '@prisma/client'
-const { PrismaClient } = pkg
-
-const prisma = new PrismaClient()
+import prisma from './client.js'
 
 const deactiveInactiveLocations = async renewalLocations => {
   const activeLocationsInDatabase = await prisma.location.findMany({
